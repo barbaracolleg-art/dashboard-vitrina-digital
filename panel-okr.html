@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Squad Publicaciones — Panel OKR & Roadmap</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+body{background:#f0f2f5;min-height:100vh;padding:24px;}
+.wrap{max-width:1180px;margin:0 auto;}
+
+.hdr{background:#111;color:#fff;padding:16px 24px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.hdr-t{font-size:16px;font-weight:600;}
+.hdr-s{font-size:11px;color:#aaa;margin-top:3px;}
+.badge{background:#1D9E75;color:#fff;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;letter-spacing:.04em;}
+
+.body{background:#fff;border:0.5px solid #e0e0e0;border-top:none;border-radius:0 0 12px 12px;padding:20px 24px;}
+
+.tabs{display:flex;border:0.5px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.tab{flex:1;padding:10px;text-align:center;font-size:13px;color:#666;background:#fff;cursor:pointer;transition:all .15s;border:none;outline:none;}
+.tab.on{background:#111;color:#fff;font-weight:500;}
+.panel{display:none;}.panel.on{display:block;}
+
+.sec{font-size:11px;font-weight:700;color:#555;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1.5px solid #f0f0f0;}
+
+/* Metric row */
+.mc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.mc{background:#f8f9fa;border-radius:8px;padding:13px 15px;}
+.mc-l{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.mc-v{font-size:22px;font-weight:600;}
+.mc-s{font-size:10px;color:#bbb;margin-top:3px;}
+.cb{color:#185FA5;}.cg{color:#3B6D11;}.cr{color:#A32D2D;}.co{color:#854F0B;}
+
+/* OKR Cards */
+.okr-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.okr-card{border:0.5px solid #e8e8e8;border-radius:10px;padding:18px 20px;}
+.okr-etapa-tag{font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.okr-meta-title{font-size:13px;font-weight:600;color:#111;margin-bottom:16px;line-height:1.4;}
+.okr-progress-lbl{display:flex;justify-content:space-between;margin-bottom:5px;}
+.okr-progress-lbl span{font-size:11px;color:#888;}
+.okr-progress-lbl strong{font-size:13px;font-weight:700;}
+.bar-track{height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;margin-bottom:4px;}
+.bar-fill{height:100%;border-radius:5px;transition:width .6s ease;}
+.bar-meta-lbl{font-size:10px;color:#bbb;margin-bottom:14px;}
+.divider{border:none;border-top:0.5px solid #f0f0f0;margin:12px 0;}
+.ind-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ind-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ind-lbl{font-size:11px;color:#666;flex:1;}
+.ind-actual{font-size:12px;font-weight:700;}
+.ind-arrow{font-size:10px;color:#bbb;margin:0 2px;}
+.ind-goal{font-size:11px;color:#999;}
+
+/* Badges */
+.b-ok{background:#EAF3DE;color:#3B6D11;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.b-ni{background:#f0f0f0;color:#888;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.b-ep{background:#FAEEDA;color:#854F0B;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.b-tec{background:#EBF3FF;color:#185FA5;padding:2px 9px;border-radius:20px;font-size:11px;}
+.b-back{background:#F3EBFF;color:#5B21B6;padding:2px 9px;border-radius:20px;font-size:11px;}
+.b-pro{background:#F5F5F5;color:#555;padding:2px 9px;border-radius:20px;font-size:11px;}
+.b-crm{background:#FFF3E0;color:#854F0B;padding:2px 9px;border-radius:20px;font-size:11px;}
+.b-p1{background:#111;color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.b-p2{background:#ddd;color:#444;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.b-trans{background:#111;color:#fff;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;display:inline-block;margin-bottom:3px;letter-spacing:.04em;}
+
+/* Filters */
+.filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.fl{font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.pill{display:inline-block;padding:4px 13px;border-radius:20px;font-size:11px;font-weight:500;background:#f5f5f5;color:#777;cursor:pointer;transition:all .15s;user-select:none;}
+.pill.on{background:#111;color:#fff;}
+.pill-sep{width:1px;height:16px;background:#e0e0e0;margin:0 4px;}
+
+/* Table */
+table.dt{width:100%;border-collapse:collapse;font-size:12px;}
+table.dt th{font-size:10px;color:#999;text-align:left;padding:7px 10px;border-bottom:1.5px solid #f0f0f0;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
+table.dt td{padding:9px 10px;border-bottom:0.5px solid #f8f8f8;color:#333;vertical-align:middle;}
+table.dt tr:hover td{background:#fafafa;}
+table.dt tr:last-child td{border-bottom:none;}
+.etapa-sep td{background:#f8f9fa!important;padding:7px 10px!important;border-bottom:0.5px solid #e8e8e8!important;}
+.etapa-sep-lbl{font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:.06em;}
+.etapa-sep-meta{font-size:11px;color:#555;margin-left:8px;font-weight:500;}
+
+/* Roadmap */
+.rm-hdr{display:flex;border-bottom:1.5px solid #e0e0e0;margin-bottom:0;padding-bottom:8px;}
+.rm-hdr-lbl{width:260px;flex-shrink:0;font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.rm-months-hdr{flex:1;display:flex;}
+.rm-month-lbl{flex:1;text-align:center;font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.rm-legend{display:flex;gap:18px;margin-bottom:14px;flex-wrap:wrap;}
+.rm-li{display:flex;align-items:center;gap:6px;font-size:11px;color:#666;}
+.rm-ld{width:16px;height:8px;border-radius:3px;}
+.rm-row{display:flex;align-items:center;border-bottom:0.5px solid #f5f5f5;}
+.rm-row-lbl{width:260px;flex-shrink:0;padding:8px 14px 8px 0;}
+.rm-row-name{font-size:11px;font-weight:500;color:#111;line-height:1.3;display:block;}
+.rm-row-resp{font-size:10px;color:#999;}
+.rm-chart{flex:1;position:relative;height:38px;}
+.rm-gridlines{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;pointer-events:none;}
+.rm-gridline{flex:1;border-right:0.5px solid #f0f0f0;}
+.rm-bar{position:absolute;top:50%;transform:translateY(-50%);height:20px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:500;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;cursor:default;}
+.rm-etapa-sep{display:flex;background:#f8f9fa;border-bottom:0.5px solid #e8e8e8;border-top:0.5px solid #e8e8e8;}
+.rm-etapa-sep-lbl{width:260px;flex-shrink:0;padding:6px 0;font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:.06em;}
+.rm-etapa-sep-chart{flex:1;}
+.rm-today{position:absolute;top:0;bottom:0;width:1.5px;background:#E24B4A;z-index:2;pointer-events:none;}
+.rm-today::before{content:'Hoy';position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:#E24B4A;font-weight:700;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-t">Squad Publicaciones — Panel OKR & Roadmap</div>
+      <div class="hdr-s">Mayo 2026 &nbsp;·&nbsp; 2 etapas &nbsp;·&nbsp; 4 metas &nbsp;·&nbsp; 14 iniciativas</div>
+    </div>
+    <span class="badge">Q2 2026</span>
+  </div>
+
+  <div class="body">
+    <div class="tabs">
+      <div class="tab on" onclick="swTab('okr',this)">OKRs</div>
+      <div class="tab" onclick="swTab('ini',this)">Iniciativas</div>
+      <div class="tab" onclick="swTab('rm',this)">Roadmap</div>
+    </div>
+
+    <!-- OKRs -->
+    <div id="p-okr" class="panel on">
+      <div class="mc-grid">
+        <div class="mc"><div class="mc-l">Iniciativas totales</div><div class="mc-v cb">14</div><div class="mc-s">2 etapas · 4 metas</div></div>
+        <div class="mc"><div class="mc-l">En curso / Ok</div><div class="mc-v cg">6</div><div class="mc-s">43% del total</div></div>
+        <div class="mc"><div class="mc-l">No iniciadas</div><div class="mc-v co">8</div><div class="mc-s">57% del total</div></div>
+        <div class="mc"><div class="mc-l">Prioridad 1</div><div class="mc-v">3</div><div class="mc-s">iniciativas críticas</div></div>
+      </div>
+      <div class="sec">Progreso por meta</div>
+      <div class="okr-grid" id="okr-grid"></div>
+    </div>
+
+    <!-- Iniciativas -->
+    <div id="p-ini" class="panel">
+      <div class="filters">
+        <span class="fl">Etapa</span>
+        <span class="pill on" data-ftype="etapa" data-fval="todas" onclick="filt(this)">Todas</span>
+        <span class="pill" data-ftype="etapa" data-fval="pub" onclick="filt(this)">Publicación Web</span>
+        <span class="pill" data-ftype="etapa" data-fval="foto" onclick="filt(this)">Foto Impel</span>
+        <span class="pill-sep"></span>
+        <span class="fl">Estado</span>
+        <span class="pill on" data-ftype="estado" data-fval="todas" onclick="filt(this)">Todos</span>
+        <span class="pill" data-ftype="estado" data-fval="Ok" onclick="filt(this)">Ok</span>
+        <span class="pill" data-ftype="estado" data-fval="No Iniciado" onclick="filt(this)">No iniciado</span>
+        <span class="pill-sep"></span>
+        <span class="fl">Prioridad</span>
+        <span class="pill on" data-ftype="prio" data-fval="todas" onclick="filt(this)">Todas</span>
+        <span class="pill" data-ftype="prio" data-fval="1" onclick="filt(this)">P1</span>
+        <span class="pill" data-ftype="prio" data-fval="2" onclick="filt(this)">P2</span>
+      </div>
+      <table class="dt">
+        <thead><tr>
+          <th style="width:38%;">Iniciativa</th>
+          <th style="width:5%;text-align:center;">P.</th>
+          <th style="width:9%;">Estado</th>
+          <th style="width:14%;">Tipo</th>
+          <th style="width:16%;">Responsable</th>
+          <th style="width:9%;">Inicio</th>
+          <th style="width:9%;">Término</th>
+        </tr></thead>
+        <tbody id="ini-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Roadmap -->
+    <div id="p-rm" class="panel">
+      <div class="rm-legend">
+        <div class="rm-li"><div class="rm-ld" style="background:#1D9E75;"></div>Ok / En curso</div>
+        <div class="rm-li"><div class="rm-ld" style="background:#bbb;"></div>No iniciado</div>
+        <div class="rm-li"><div class="rm-ld" style="background:#111;"></div>Transformacional (P1)</div>
+        <div class="rm-li"><div class="rm-ld" style="background:#E24B4A;width:2px;height:14px;border-radius:0;"></div>Hoy</div>
+      </div>
+      <div class="rm-hdr">
+        <div class="rm-hdr-lbl">Iniciativa / Responsable</div>
+        <div class="rm-months-hdr" id="rm-months-hdr"></div>
+      </div>
+      <div id="rm-rows"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const OKRS = [
+  {
+    etapa:'Publicación en Sitio Web',
+    meta:'Unidades retenidas en acopio / sin procesar',
+    okrActual:79.2, okrMeta:90,
+    indicadores:[
+      {lbl:'Unidades en acopio sin procesar', actual:'114 uds', meta:'< 30', color:'#E24B4A'},
+      {lbl:'Publicación automática al ingresar',actual:'No iniciado',meta:'100%',color:'#854F0B'}
+    ]
+  },
+  {
+    etapa:'Publicación en Sitio Web',
+    meta:'Reservas fantasma liberadas automáticamente',
+    okrActual:79.2, okrMeta:90,
+    indicadores:[
+      {lbl:'Liberación automática activa',actual:'0%',meta:'100%',color:'#E24B4A'},
+      {lbl:'Reservas >30 días sin avance',actual:'Sin medir',meta:'0',color:'#854F0B'}
+    ]
+  },
+  {
+    etapa:'Producción y Post-Procesado Foto Impel',
+    meta:'% stock publicado con foto Impel lista',
+    okrActual:61.5, okrMeta:95,
+    indicadores:[
+      {lbl:'Cobertura Impel por zona',actual:'56–65%',meta:'80% mín.',color:'#E24B4A'},
+      {lbl:'SLA foto → Impel',actual:'Sin medir',meta:'< 24h',color:'#854F0B'}
+    ]
+  },
+  {
+    etapa:'Producción y Post-Procesado Foto Impel',
+    meta:'Unidades sin foto alguna (Tier 4)',
+    okrActual:61.5, okrMeta:95,
+    indicadores:[
+      {lbl:'Unidades Tier 4 activas',actual:'338 uds',meta:'< 30',color:'#E24B4A'},
+      {lbl:'Ingreso a Llaima al ingresar stock',actual:'Parcial',meta:'100%',color:'#854F0B'}
+    ]
+  }
+];
+
+const INI = [
+  {id:1,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Unidades retenidas en acopio / sin procesar',        nombre:'Publicar unidades en Acopio',                                                  prio:1,    resp:'Diego Villegas',              tipo:'Proceso',              estado:'Ok',         inicio:'2026-05-01', fin:'2026-05-31'},
+  {id:2,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Unidades retenidas en acopio / sin procesar',        nombre:'Cambio de estado Gestpark: previsión → Stock al aplicar Checklist de Entrega', prio:null, resp:'Daniel Abarca',               tipo:'Tecnológica',          estado:'No Iniciado', inicio:null,         fin:null},
+  {id:3,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Reservas fantasma liberadas automáticamente',        nombre:'Publicar Unidades Reservadas',                                                 prio:null, resp:'Daniel Abarca',               tipo:'Tecnológica/CRM',      estado:'Ok',         inicio:'2026-04-15', fin:'2026-05-15'},
+  {id:4,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Reservas fantasma liberadas automáticamente',        nombre:'Liberación automática de reservas fantasma',                                   prio:1,    resp:'Daniel Abarca',               tipo:'Tecnológica/CRM',      estado:'Ok',         inicio:'2026-04-15', fin:'2026-05-31'},
+  {id:5,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Reservas fantasma liberadas automáticamente',        nombre:'Regla en Llaima: liberación a 48h sin avance',                                 prio:null, resp:'Daniel Abarca',               tipo:'Tecnológica/CRM',      estado:'Ok',         inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:6,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Reservas fantasma liberadas automáticamente',        nombre:'Alerta al asesor antes del vencimiento',                                       prio:null, resp:'Daniel Abarca',               tipo:'Tecnológica/CRM',      estado:'Ok',         inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:7,  etapa:'pub', etapaNom:'Publicación en Sitio Web',          meta:'Reservas fantasma liberadas automáticamente',        nombre:'Diferenciar reserva comercial activa vs. fantasma (>30 días sin avance)',     prio:null, resp:'Daniel Abarca',               tipo:'Tecnológica/CRM',      estado:'Ok',         inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:8,  etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'% stock publicado con foto Impel lista',   nombre:'Foto final in-house al momento de la inspección mecánica',                    prio:1,    resp:'Victor Araya',                tipo:'Tecnológica/Backoffice',estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-07-15', trans:true},
+  {id:9,  etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'% stock publicado con foto Impel lista',   nombre:'SLA transitorio foto tomada → Impel < 24h',                                    prio:null, resp:'Javiera Jerez / Diego Villegas',tipo:'Proceso',              estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:10, etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'% stock publicado con foto Impel lista',   nombre:'Target mínimo 80% cobertura por zona hasta completar roll-out',                prio:2,    resp:'Javiera Jerez / Diego Villegas',tipo:'Proceso',              estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:11, etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'% stock publicado con foto Impel lista',   nombre:'Priorización de stock premium durante transición',                             prio:null, resp:'Javiera Jerez / Diego Villegas',tipo:'Proceso',              estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:12, etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'Unidades sin foto alguna (Tier 4)',         nombre:'Ingresar a Llaima todas las unidades que ingresan al stock (incluye Test car)', prio:2,    resp:'Diego Villegas',              tipo:'Proceso',              estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:13, etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'Unidades sin foto alguna (Tier 4)',         nombre:'Priorización de stock sin fotografía',                                         prio:null, resp:'Diego Villegas',              tipo:'Proceso',              estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-05-31'},
+  {id:14, etapa:'foto',etapaNom:'Producción y Post-Procesado Foto Impel', meta:'Unidades sin foto alguna (Tier 4)',         nombre:'Alerta cuando backlog >20% del publicado',                                     prio:null, resp:'Diego Villegas',              tipo:'Proceso',              estado:'No Iniciado', inicio:'2026-05-15', fin:'2026-05-31'},
+];
+
+/* ---- OKR TAB ---- */
+function renderOKRs() {
+  document.getElementById('okr-grid').innerHTML = OKRS.map(o => {
+    const pct = Math.round((o.okrActual / o.okrMeta) * 100);
+    const col = pct >= 85 ? '#3B6D11' : pct >= 65 ? '#854F0B' : '#A32D2D';
+    const indRows = o.indicadores.map(i =>
+      `<div class="ind-row">
+        <div class="ind-dot" style="background:${i.color};"></div>
+        <div class="ind-lbl">${i.lbl}</div>
+        <span class="ind-actual" style="color:${i.color};">${i.actual}</span>
+        <span class="ind-arrow">→</span>
+        <span class="ind-goal">${i.meta}</span>
+      </div>`
+    ).join('');
+    return `<div class="okr-card">
+      <div class="okr-etapa-tag">${o.etapa}</div>
+      <div class="okr-meta-title">${o.meta}</div>
+      <div class="okr-progress-lbl">
+        <span>OKR actual</span>
+        <strong style="color:${col};">${o.okrActual}%</strong>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${col};"></div></div>
+      <div class="bar-meta-lbl">Meta: <strong>${o.okrMeta}%</strong> &nbsp;·&nbsp; Avance: <strong style="color:${col};">${pct}%</strong></div>
+      <hr class="divider">
+      ${indRows}
+    </div>`;
+  }).join('');
+}
+
+/* ---- INICIATIVAS TAB ---- */
+const F = {etapa:'todas', estado:'todas', prio:'todas'};
+
+function tipoClass(t) {
+  if(t.includes('Backoffice')) return 'b-back';
+  if(t.includes('CRM')) return 'b-crm';
+  if(t.includes('Tecno')) return 'b-tec';
+  return 'b-pro';
+}
+
+function fmtDate(d) {
+  if(!d) return '—';
+  const p = d.split('-');
+  return `${p[2]}/${p[1]}`;
+}
+
+function renderIni() {
+  const rows = INI.filter(i => {
+    if(F.etapa !== 'todas' && i.etapa !== F.etapa) return false;
+    if(F.estado !== 'todas' && i.estado !== F.estado) return false;
+    if(F.prio !== 'todas' && String(i.prio) !== F.prio) return false;
+    return true;
+  });
+
+  let html = '', lastKey = '';
+  rows.forEach(i => {
+    const key = i.etapa + '||' + i.meta;
+    if(key !== lastKey) {
+      html += `<tr class="etapa-sep"><td colspan="7"><span class="etapa-sep-lbl">${i.etapaNom}</span><span class="etapa-sep-meta">${i.meta}</span></td></tr>`;
+      lastKey = key;
+    }
+    const est = i.estado === 'Ok' ? `<span class="b-ok">Ok</span>` : `<span class="b-ni">No iniciado</span>`;
+    const prio = i.prio === 1 ? `<span class="b-p1">1</span>` : i.prio === 2 ? `<span class="b-p2">2</span>` : `<span style="color:#ddd;">—</span>`;
+    const trans = i.trans ? `<span class="b-trans">TRANSF.</span> ` : '';
+    html += `<tr>
+      <td>${trans}${i.nombre}</td>
+      <td style="text-align:center;">${prio}</td>
+      <td>${est}</td>
+      <td><span class="${tipoClass(i.tipo)}">${i.tipo}</span></td>
+      <td style="font-size:11px;color:#666;">${i.resp}</td>
+      <td style="font-size:11px;color:#999;white-space:nowrap;">${fmtDate(i.inicio)}</td>
+      <td style="font-size:11px;color:#999;white-space:nowrap;">${fmtDate(i.fin)}</td>
+    </tr>`;
+  });
+  document.getElementById('ini-body').innerHTML = html;
+}
+
+function filt(el) {
+  const tipo = el.dataset.ftype;
+  document.querySelectorAll(`[data-ftype="${tipo}"]`).forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  F[tipo] = el.dataset.fval;
+  renderIni();
+}
+
+/* ---- ROADMAP TAB ---- */
+function renderRM() {
+  const RS = new Date('2026-04-01');
+  const RE = new Date('2026-07-31');
+  const TOTAL = RE - RS;
+  const MONTHS = [{l:'Abril',d:'2026-04'},{l:'Mayo',d:'2026-05'},{l:'Junio',d:'2026-06'},{l:'Julio',d:'2026-07'}];
+
+  document.getElementById('rm-months-hdr').innerHTML = MONTHS.map(m=>`<div class="rm-month-lbl">${m.l}</div>`).join('');
+
+  // Today line position
+  const today = new Date('2026-05-11');
+  const todayPct = ((today - RS) / TOTAL * 100).toFixed(2);
+
+  let html = '';
+  let lastEtapa = '';
+
+  INI.forEach(i => {
+    if(!i.inicio || !i.fin) return;
+    if(i.etapaNom !== lastEtapa) {
+      html += `<div class="rm-etapa-sep">
+        <div class="rm-etapa-sep-lbl">${i.etapaNom}</div>
+        <div class="rm-etapa-sep-chart"></div>
+      </div>`;
+      lastEtapa = i.etapaNom;
+    }
+    const s = new Date(i.inicio);
+    const e = new Date(i.fin);
+    const left = Math.max(0, ((s - RS) / TOTAL * 100));
+    const width = Math.min(100 - left, ((e - s) / TOTAL * 100));
+    const col = i.trans ? '#111' : i.estado === 'Ok' ? '#1D9E75' : '#bbb';
+    const label = (i.prio ? `P${i.prio} · ` : '') + i.resp.split('/')[0].trim();
+
+    html += `<div class="rm-row">
+      <div class="rm-row-lbl">
+        <span class="rm-row-name">${i.trans ? '★ ' : ''}${i.nombre.replace('[TRANSFORMACIONAL] ','')}</span>
+        <span class="rm-row-resp">${i.resp}</span>
+      </div>
+      <div class="rm-chart">
+        <div class="rm-gridlines">${MONTHS.map(()=>'<div class="rm-gridline"></div>').join('')}</div>
+        <div style="position:absolute;left:${todayPct}%;top:0;bottom:0;width:1.5px;background:#E24B4A;opacity:.5;z-index:1;"></div>
+        <div class="rm-bar" style="left:${left}%;width:${Math.max(width,1)}%;background:${col};" title="${i.nombre}">${label}</div>
+      </div>
+    </div>`;
+  });
+
+  // Add today label on first row area
+  html = `<div style="position:relative;height:18px;">
+    <div style="position:absolute;left:${todayPct}%;transform:translateX(-50%);font-size:9px;color:#E24B4A;font-weight:700;">Hoy</div>
+  </div>` + html;
+
+  document.getElementById('rm-rows').innerHTML = html;
+}
+
+/* ---- TAB SWITCH ---- */
+function swTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('p-' + id).classList.add('on');
+}
+
+/* ---- INIT ---- */
+renderOKRs();
+renderIni();
+renderRM();
+</script>
+</body>
+</html>
