@@ -229,7 +229,7 @@ select.sg-input{cursor:pointer;background:#fff;}
     <!-- Roadmap -->
     <div id="p-rm" class="panel">
       <div class="rm-legend">
-        <div class="rm-li"><div class="rm-ld" style="background:#1D9E75;"></div>Ok / En curso</div>
+        <div class="rm-li"><div class="rm-ld" style="background:#F97316;"></div>Ok / En curso</div>
         <div class="rm-li"><div class="rm-ld" style="background:#bbb;"></div>No iniciado</div>
         <div class="rm-li"><div class="rm-ld" style="background:#111;"></div>Transformacional (P1)</div>
         <div class="rm-li"><div class="rm-ld" style="background:#E24B4A;width:2px;height:14px;border-radius:0;"></div>Hoy</div>
@@ -557,7 +557,7 @@ function renderRM() {
     const e = new Date(i.fin);
     const left = Math.max(0, ((s - RS) / TOTAL * 100));
     const width = Math.min(100 - left, ((e - s) / TOTAL * 100));
-    const col = i.trans ? '#111' : i.estado === 'Ok' ? '#1D9E75' : '#bbb';
+    const col = i.trans ? '#111' : i.estado === 'Ok' ? '#F97316' : '#bbb';
     const label = (i.prio ? `P${i.prio} · ` : '') + i.resp.split('/')[0].trim();
 
     html += `<div class="rm-row">
