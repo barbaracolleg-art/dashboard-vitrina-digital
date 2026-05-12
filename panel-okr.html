@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Squad Publicaciones — Panel OKR & Roadmap</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 body{background:#f0f2f5;min-height:100vh;padding:24px;}
@@ -100,6 +101,31 @@ table.dt tr:last-child td{border-bottom:none;}
 .rm-etapa-sep-chart{flex:1;}
 .rm-today{position:absolute;top:0;bottom:0;width:1.5px;background:#E24B4A;z-index:2;pointer-events:none;}
 .rm-today::before{content:'Hoy';position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:#E24B4A;font-weight:700;white-space:nowrap;}
+
+/* Seguimiento */
+.sg-layout{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;}
+.sg-form{border:0.5px solid #e8e8e8;border-radius:10px;padding:18px 20px;}
+.sg-form-title{font-size:13px;font-weight:600;color:#111;margin-bottom:16px;}
+.sg-field{margin-bottom:13px;}
+.sg-label{font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;}
+.sg-input{width:100%;padding:8px 11px;border:0.5px solid #ddd;border-radius:7px;font-size:13px;color:#111;outline:none;transition:border .15s;}
+.sg-input:focus{border-color:#111;}
+select.sg-input{cursor:pointer;background:#fff;}
+.sg-hint{font-size:10px;color:#bbb;margin-top:3px;}
+.sg-btn{width:100%;padding:10px;background:#111;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:4px;}
+.sg-btn:hover{opacity:.85;}
+.sg-right{}
+.sg-chart-card{border:0.5px solid #e8e8e8;border-radius:10px;padding:18px 20px;margin-bottom:14px;}
+.sg-hist-card{border:0.5px solid #e8e8e8;border-radius:10px;padding:18px 20px;}
+.sg-card-title{font-size:13px;font-weight:600;color:#111;margin-bottom:4px;}
+.sg-card-sub{font-size:11px;color:#aaa;margin-bottom:14px;}
+.sg-empty{font-size:12px;color:#bbb;text-align:center;padding:24px 0;}
+.sg-del{background:none;border:none;color:#ddd;cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;}
+.sg-del:hover{color:#E24B4A;background:#FCEBEB;}
+.sg-tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+.sg-ok-tag{background:#EAF3DE;color:#3B6D11;}
+.sg-warn-tag{background:#FAEEDA;color:#854F0B;}
+.sg-bad-tag{background:#FCEBEB;color:#A32D2D;}
 </style>
 </head>
 <body>
@@ -117,6 +143,7 @@ table.dt tr:last-child td{border-bottom:none;}
       <div class="tab on" onclick="swTab('okr',this)">OKRs</div>
       <div class="tab" onclick="swTab('ini',this)">Iniciativas</div>
       <div class="tab" onclick="swTab('rm',this)">Roadmap</div>
+      <div class="tab" onclick="swTab('sg',this)">Seguimiento</div>
     </div>
 
     <!-- OKRs -->
@@ -176,6 +203,58 @@ table.dt tr:last-child td{border-bottom:none;}
         <div class="rm-months-hdr" id="rm-months-hdr"></div>
       </div>
       <div id="rm-rows"></div>
+    </div>
+
+    <!-- Seguimiento -->
+    <div id="p-sg" class="panel">
+      <div class="sg-layout">
+        <div class="sg-form">
+          <div class="sg-form-title">Registrar actualización semanal</div>
+          <div class="sg-field">
+            <label class="sg-label">Líder</label>
+            <select id="sg-lider" class="sg-input" onchange="sgLiderChange()">
+              <option value="">— Seleccionar —</option>
+              <option>Diego Villegas</option>
+              <option>Daniel Abarca</option>
+              <option>Victor Araya</option>
+              <option>Javiera Jerez</option>
+            </select>
+          </div>
+          <div class="sg-field">
+            <label class="sg-label">Semana</label>
+            <input type="date" id="sg-fecha" class="sg-input">
+            <div class="sg-hint">Ingresa cualquier día de la semana</div>
+          </div>
+          <div class="sg-field">
+            <label class="sg-label">OKR actual (%)</label>
+            <input type="number" id="sg-okr" class="sg-input" min="0" max="100" step="0.1" placeholder="ej: 82.5">
+            <div class="sg-hint" id="sg-okr-hint">Meta: —</div>
+          </div>
+          <div class="sg-field">
+            <label class="sg-label" id="sg-ind-label">Indicador actual</label>
+            <input type="text" id="sg-ind" class="sg-input" placeholder="—">
+            <div class="sg-hint" id="sg-ind-hint">Meta: —</div>
+          </div>
+          <div class="sg-field">
+            <label class="sg-label">Comentario <span style="font-weight:400;color:#ccc;">(opcional)</span></label>
+            <input type="text" id="sg-comentario" class="sg-input" placeholder="Bloqueos, avances, novedades...">
+          </div>
+          <button class="sg-btn" onclick="sgGuardar()">Guardar registro</button>
+          <div id="sg-msg" style="font-size:11px;text-align:center;margin-top:8px;min-height:16px;"></div>
+        </div>
+        <div class="sg-right">
+          <div class="sg-chart-card">
+            <div class="sg-card-title">Evolución OKR semanal</div>
+            <div class="sg-card-sub">Por líder — últimas 8 semanas</div>
+            <div style="position:relative;height:200px;"><canvas id="sg-chart"></canvas></div>
+          </div>
+          <div class="sg-hist-card">
+            <div class="sg-card-title">Historial de registros</div>
+            <div class="sg-card-sub">Clic en ✕ para eliminar una entrada</div>
+            <div id="sg-hist"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -382,10 +461,167 @@ function swTab(id, el) {
   document.getElementById('p-' + id).classList.add('on');
 }
 
+/* ---- SEGUIMIENTO TAB ---- */
+const SG_LIDERES = {
+  'Diego Villegas': {okrMeta:90, indLabel:'Unidades en acopio sin procesar', indMeta:'< 30 uds', indSentido:'menos'},
+  'Daniel Abarca':  {okrMeta:90, indLabel:'% Liberación automática activa',  indMeta:'100%',      indSentido:'mas'},
+  'Victor Araya':   {okrMeta:95, indLabel:'% Cobertura Impel',               indMeta:'≥ 80%',     indSentido:'mas'},
+  'Javiera Jerez':  {okrMeta:95, indLabel:'% Cobertura Impel por zona',      indMeta:'≥ 80%',     indSentido:'mas'},
+};
+const SG_COLORS = {'Diego Villegas':'#185FA5','Daniel Abarca':'#1D9E75','Victor Araya':'#854F0B','Javiera Jerez':'#7C3AED'};
+let sgChart = null;
+
+function sgGetData() {
+  return JSON.parse(localStorage.getItem('sg_data') || '[]');
+}
+function sgSaveData(d) {
+  localStorage.setItem('sg_data', JSON.stringify(d));
+}
+function sgWeekLabel(dateStr) {
+  const d = new Date(dateStr);
+  const day = d.getDay(), diff = d.getDate() - day + (day===0?-6:1);
+  const mon = new Date(d.setDate(diff));
+  return `${String(mon.getDate()).padStart(2,'0')}/${String(mon.getMonth()+1).padStart(2,'0')}`;
+}
+
+function sgLiderChange() {
+  const lider = document.getElementById('sg-lider').value;
+  const cfg = SG_LIDERES[lider];
+  if(!cfg) {
+    document.getElementById('sg-okr-hint').textContent = 'Meta: —';
+    document.getElementById('sg-ind-label').textContent = 'Indicador actual';
+    document.getElementById('sg-ind-hint').textContent = 'Meta: —';
+    return;
+  }
+  document.getElementById('sg-okr-hint').textContent = `Meta: ${cfg.okrMeta}%`;
+  document.getElementById('sg-ind-label').textContent = cfg.indLabel;
+  document.getElementById('sg-ind-hint').textContent = `Meta: ${cfg.indMeta}`;
+  document.getElementById('sg-ind').placeholder = cfg.indSentido === 'mas' ? 'ej: 72.5' : 'ej: 45';
+}
+
+function sgGuardar() {
+  const lider = document.getElementById('sg-lider').value;
+  const fecha = document.getElementById('sg-fecha').value;
+  const okr   = parseFloat(document.getElementById('sg-okr').value);
+  const ind   = document.getElementById('sg-ind').value.trim();
+  const com   = document.getElementById('sg-comentario').value.trim();
+  const msg   = document.getElementById('sg-msg');
+
+  if(!lider || !fecha || isNaN(okr)) {
+    msg.style.color = '#A32D2D';
+    msg.textContent = 'Completá líder, semana y OKR actual.';
+    return;
+  }
+  const data = sgGetData();
+  data.unshift({id: Date.now(), lider, fecha, okr, ind, com, ts: new Date().toISOString()});
+  sgSaveData(data);
+
+  document.getElementById('sg-okr').value = '';
+  document.getElementById('sg-ind').value = '';
+  document.getElementById('sg-comentario').value = '';
+  msg.style.color = '#3B6D11';
+  msg.textContent = '✓ Registro guardado';
+  setTimeout(()=>msg.textContent='', 2500);
+
+  sgRenderHist();
+  sgRenderChart();
+}
+
+function sgEliminar(id) {
+  const data = sgGetData().filter(r => r.id !== id);
+  sgSaveData(data);
+  sgRenderHist();
+  sgRenderChart();
+}
+
+function sgStatus(okr, meta) {
+  const pct = (okr/meta)*100;
+  if(pct >= 85) return ['sg-ok-tag','En meta'];
+  if(pct >= 65) return ['sg-warn-tag','En riesgo'];
+  return ['sg-bad-tag','Fuera de meta'];
+}
+
+function sgRenderHist() {
+  const data = sgGetData();
+  const el = document.getElementById('sg-hist');
+  if(!data.length) { el.innerHTML = '<div class="sg-empty">Sin registros aún. Ingresá el primer dato.</div>'; return; }
+
+  const rows = data.slice(0,30).map(r => {
+    const cfg = SG_LIDERES[r.lider] || {};
+    const [cls, lbl] = sgStatus(r.okr, cfg.okrMeta||90);
+    return `<tr>
+      <td style="font-size:11px;color:#888;white-space:nowrap;">${sgWeekLabel(r.fecha)}</td>
+      <td style="font-size:12px;font-weight:500;" >${r.lider}</td>
+      <td style="font-size:12px;font-weight:700;color:${SG_COLORS[r.lider]||'#333'};">${r.okr}%</td>
+      <td style="font-size:11px;color:#555;">${r.ind||'—'}</td>
+      <td><span class="sg-tag ${cls}">${lbl}</span></td>
+      <td style="font-size:11px;color:#aaa;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.com||'—'}</td>
+      <td><button class="sg-del" onclick="sgEliminar(${r.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div style="overflow-x:auto;"><table class="dt">
+    <thead><tr>
+      <th>Semana</th><th>Líder</th><th>OKR</th><th>Indicador</th><th>Estado</th><th>Comentario</th><th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function sgRenderChart() {
+  const data = sgGetData();
+  if(!data.length) return;
+
+  // Get last 8 unique weeks
+  const weeks = [...new Set(data.map(r => sgWeekLabel(r.fecha)))].slice(0,8).reverse();
+  const lideres = Object.keys(SG_LIDERES);
+
+  const datasets = lideres.map(l => {
+    const puntos = weeks.map(w => {
+      const match = data.find(r => sgWeekLabel(r.fecha) === w && r.lider === l);
+      return match ? match.okr : null;
+    });
+    return {
+      label: l,
+      data: puntos,
+      borderColor: SG_COLORS[l],
+      backgroundColor: SG_COLORS[l],
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+      tension: 0.3,
+      spanGaps: true,
+    };
+  }).filter(ds => ds.data.some(v => v !== null));
+
+  const ctx = document.getElementById('sg-chart');
+  if(sgChart) sgChart.destroy();
+  sgChart = new Chart(ctx, {
+    type: 'line',
+    data: {labels: weeks, datasets},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend:{labels:{font:{size:11},boxWidth:12}}},
+      scales: {
+        y: {min:0, max:100, ticks:{callback:v=>v+'%',font:{size:10}}, grid:{color:'rgba(0,0,0,.05)'}},
+        x: {ticks:{font:{size:10}}, grid:{display:false}}
+      }
+    }
+  });
+}
+
+function sgInit() {
+  const hoy = new Date().toISOString().slice(0,10);
+  document.getElementById('sg-fecha').value = hoy;
+  sgRenderHist();
+  sgRenderChart();
+}
+
 /* ---- INIT ---- */
 renderOKRs();
 renderIni();
 renderRM();
+sgInit();
 </script>
 </body>
 </html>
