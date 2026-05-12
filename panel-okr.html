@@ -183,6 +183,13 @@ select.sg-input{cursor:pointer;background:#fff;}
         <span class="pill" data-ftype="estado" data-fval="Ok" onclick="filt(this)">Ok</span>
         <span class="pill" data-ftype="estado" data-fval="No Iniciado" onclick="filt(this)">No iniciado</span>
         <span class="pill-sep"></span>
+        <span class="fl">OKR</span>
+        <span class="pill on" data-ftype="meta" data-fval="todas" onclick="filt(this)">Todos</span>
+        <span class="pill" data-ftype="meta" data-fval="Unidades retenidas en acopio / sin procesar" onclick="filt(this)">Acopio</span>
+        <span class="pill" data-ftype="meta" data-fval="Reservas fantasma liberadas automáticamente" onclick="filt(this)">Reservas</span>
+        <span class="pill" data-ftype="meta" data-fval="% stock publicado con foto Impel lista" onclick="filt(this)">Foto Impel</span>
+        <span class="pill" data-ftype="meta" data-fval="Unidades sin foto alguna (Tier 4)" onclick="filt(this)">Tier 4</span>
+        <span class="pill-sep"></span>
         <span class="fl">Prioridad</span>
         <span class="pill on" data-ftype="prio" data-fval="todas" onclick="filt(this)">Todas</span>
         <span class="pill" data-ftype="prio" data-fval="1" onclick="filt(this)">P1</span>
@@ -360,6 +367,9 @@ function renderOKRs() {
       <div class="bar-meta-lbl">Meta: <strong>${o.okrMeta}%</strong> &nbsp;·&nbsp; Avance: <strong style="color:${col};">${pct}%</strong></div>
       <hr class="divider">
       ${indRows}
+      <div style="margin-top:12px;text-align:right;">
+        <button onclick="verIni('${o.meta}')" style="background:none;border:0.5px solid #ddd;border-radius:20px;padding:4px 12px;font-size:11px;color:#555;cursor:pointer;">Ver iniciativas →</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -394,7 +404,7 @@ function renderWkHeader() {
   ).join('');
 }
 
-const F = {etapa:'todas', estado:'todas', prio:'todas'};
+const F = {etapa:'todas', estado:'todas', prio:'todas', meta:'todas'};
 
 function tipoClass(t) {
   if(t.includes('Backoffice')) return 'b-back';
@@ -414,6 +424,7 @@ function renderIni() {
     if(F.etapa !== 'todas' && i.etapa !== F.etapa) return false;
     if(F.estado !== 'todas' && i.estado !== F.estado) return false;
     if(F.prio !== 'todas' && String(i.prio) !== F.prio) return false;
+    if(F.meta !== 'todas' && i.meta !== F.meta) return false;
     return true;
   });
 
@@ -456,6 +467,19 @@ function filt(el) {
   document.querySelectorAll(`[data-ftype="${tipo}"]`).forEach(p => p.classList.remove('on'));
   el.classList.add('on');
   F[tipo] = el.dataset.fval;
+  renderIni();
+}
+
+function verIni(meta) {
+  F.meta = meta;
+  F.etapa = 'todas'; F.estado = 'todas'; F.prio = 'todas';
+  document.querySelectorAll('[data-ftype="meta"]').forEach(p => {
+    p.classList.toggle('on', p.dataset.fval === meta);
+  });
+  ['etapa','estado','prio'].forEach(t => {
+    document.querySelectorAll(`[data-ftype="${t}"]`).forEach((p,i) => p.classList.toggle('on', i===0));
+  });
+  swTab('ini', document.querySelectorAll('.tab')[1]);
   renderIni();
 }
 
