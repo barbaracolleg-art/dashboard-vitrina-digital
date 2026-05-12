@@ -301,29 +301,35 @@ const OKRS = [
     etapa:'Publicación en Sitio Web',
     etapaKey:'pub',
     okrActual:79.2, okrMeta:90,
-    indicadores:[
-      {lbl:'Unidades en acopio sin procesar',    actual:'114 uds',    meta:'< 30',    color:'#E24B4A'},
-      {lbl:'Publicación automática al ingresar', actual:'No iniciado',meta:'100%',    color:'#854F0B'},
-      {lbl:'Liberación automática activa',       actual:'0%',         meta:'100%',    color:'#E24B4A'},
-      {lbl:'Reservas >30 días sin avance',       actual:'Sin medir',  meta:'0',       color:'#854F0B'}
-    ]
+    metas:[{
+      meta:null,
+      indicadores:[
+        {lbl:'Unidades en acopio sin procesar',    actual:'114 uds',    meta:'< 30',  color:'#E24B4A'},
+        {lbl:'Publicación automática al ingresar', actual:'No iniciado',meta:'100%',  color:'#854F0B'},
+        {lbl:'Liberación automática activa',       actual:'0%',         meta:'100%',  color:'#E24B4A'},
+        {lbl:'Reservas >30 días sin avance',       actual:'Sin medir',  meta:'0',     color:'#854F0B'}
+      ]
+    }]
   },
   {
     etapa:'Producción y Post-Procesado Foto Impel',
-    meta:'% stock publicado con foto Impel lista',
+    etapaKey:'foto',
     okrActual:61.5, okrMeta:95,
-    indicadores:[
-      {lbl:'Cobertura Impel por zona',actual:'56–65%',meta:'80% mín.',color:'#E24B4A'},
-      {lbl:'SLA foto → Impel',actual:'Sin medir',meta:'< 24h',color:'#854F0B'}
-    ]
-  },
-  {
-    etapa:'Producción y Post-Procesado Foto Impel',
-    meta:'Unidades sin foto alguna (Tier 4)',
-    okrActual:61.5, okrMeta:95,
-    indicadores:[
-      {lbl:'Unidades Tier 4 activas',actual:'338 uds',meta:'< 30',color:'#E24B4A'},
-      {lbl:'Ingreso a Llaima al ingresar stock',actual:'Parcial',meta:'100%',color:'#854F0B'}
+    metas:[
+      {
+        meta:'% stock publicado con foto Impel lista',
+        indicadores:[
+          {lbl:'Cobertura Impel por zona',actual:'56–65%',meta:'80% mín.',color:'#E24B4A'},
+          {lbl:'SLA foto → Impel',actual:'Sin medir',meta:'< 24h',color:'#854F0B'}
+        ]
+      },
+      {
+        meta:'Unidades sin foto alguna (Tier 4)',
+        indicadores:[
+          {lbl:'Unidades Tier 4 activas',actual:'338 uds',meta:'< 30',color:'#E24B4A'},
+          {lbl:'Ingreso a Llaima al ingresar stock',actual:'Parcial',meta:'100%',color:'#854F0B'}
+        ]
+      }
     ]
   }
 ];
@@ -350,18 +356,19 @@ function renderOKRs() {
   document.getElementById('okr-grid').innerHTML = OKRS.map(o => {
     const pct = Math.round((o.okrActual / o.okrMeta) * 100);
     const col = pct >= 85 ? '#3B6D11' : pct >= 65 ? '#854F0B' : '#A32D2D';
-    const indRows = o.indicadores.map(i =>
-      `<div class="ind-row">
-        <div class="ind-dot" style="background:${i.color};"></div>
-        <div class="ind-lbl">${i.lbl}</div>
-        <span class="ind-actual" style="color:${i.color};">${i.actual}</span>
-        <span class="ind-arrow">→</span>
-        <span class="ind-goal">${i.meta}</span>
-      </div>`
-    ).join('');
 
-    if(o.etapaKey) {
-      const inis = INI.filter(i => i.etapa === o.etapaKey);
+    const metaBlocks = o.metas.map((m, mi) => {
+      const indRows = m.indicadores.map(i =>
+        `<div class="ind-row">
+          <div class="ind-dot" style="background:${i.color};"></div>
+          <div class="ind-lbl">${i.lbl}</div>
+          <span class="ind-actual" style="color:${i.color};">${i.actual}</span>
+          <span class="ind-arrow">→</span>
+          <span class="ind-goal">${i.meta}</span>
+        </div>`
+      ).join('');
+
+      const inis = m.meta ? INI.filter(i => i.meta === m.meta) : INI.filter(i => i.etapa === o.etapaKey);
       const iniItems = inis.map(i => {
         const dotCol = i.estado === 'Ok' ? '#1D9E75' : '#ccc';
         const badge = i.prio === 1
@@ -371,38 +378,30 @@ function renderOKRs() {
           : '';
         return `<div class="okr-ini-item"><div class="okr-ini-dot" style="background:${dotCol};"></div>${badge}<span class="okr-ini-name">${i.nombre}</span></div>`;
       }).join('');
-      return `<div class="okr-card" style="grid-column:span 2">
-        <div class="okr-etapa-tag">${o.etapa}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;align-items:start;margin-top:4px;">
-          <div>
-            <div class="okr-progress-lbl"><span>OKR actual</span><strong style="color:${col};">${o.okrActual}%</strong></div>
-            <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${col};"></div></div>
-            <div class="bar-meta-lbl">Meta: <strong>${o.okrMeta}%</strong> &nbsp;·&nbsp; Avance: <strong style="color:${col};">${pct}%</strong></div>
-            <hr class="divider">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">${indRows}</div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Iniciativas asociadas</div>
-            <div class="okr-ini-list">${iniItems}</div>
-            <div style="margin-top:10px;text-align:right;">
-              <button onclick="verEtapa('${o.etapaKey}')" style="background:none;border:0.5px solid #ddd;border-radius:20px;padding:4px 12px;font-size:11px;color:#555;cursor:pointer;">Ver todas las iniciativas →</button>
-            </div>
-          </div>
-        </div>
+
+      const verBtn = m.meta
+        ? `<button onclick="verIni('${m.meta}')" style="background:none;border:0.5px solid #ddd;border-radius:20px;padding:4px 12px;font-size:11px;color:#555;cursor:pointer;">Ver iniciativas →</button>`
+        : `<button onclick="verEtapa('${o.etapaKey}')" style="background:none;border:0.5px solid #ddd;border-radius:20px;padding:4px 12px;font-size:11px;color:#555;cursor:pointer;">Ver iniciativas →</button>`;
+
+      return `<div class="okr-meta-block">
+        ${mi > 0 ? '<hr class="divider">' : ''}
+        ${m.meta ? `<div class="okr-meta-title">${m.meta}</div>` : ''}
+        ${indRows}
+        <div class="okr-ini-list">${iniItems}</div>
+        <div style="margin-top:8px;text-align:right;">${verBtn}</div>
       </div>`;
-    }
+    }).join('');
 
     return `<div class="okr-card">
       <div class="okr-etapa-tag">${o.etapa}</div>
-      <div class="okr-meta-title">${o.meta}</div>
-      <div class="okr-progress-lbl"><span>OKR actual</span><strong style="color:${col};">${o.okrActual}%</strong></div>
+      <div class="okr-progress-lbl">
+        <span>OKR actual</span>
+        <strong style="color:${col};">${o.okrActual}%</strong>
+      </div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${col};"></div></div>
       <div class="bar-meta-lbl">Meta: <strong>${o.okrMeta}%</strong> &nbsp;·&nbsp; Avance: <strong style="color:${col};">${pct}%</strong></div>
       <hr class="divider">
-      ${indRows}
-      <div style="margin-top:12px;text-align:right;">
-        <button onclick="verIni('${o.meta}')" style="background:none;border:0.5px solid #ddd;border-radius:20px;padding:4px 12px;font-size:11px;color:#555;cursor:pointer;">Ver iniciativas →</button>
-      </div>
+      ${metaBlocks}
     </div>`;
   }).join('');
 }
