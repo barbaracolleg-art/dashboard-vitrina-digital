@@ -122,6 +122,18 @@ select.sg-input{cursor:pointer;background:#fff;}
 .sg-empty{font-size:12px;color:#bbb;text-align:center;padding:24px 0;}
 .sg-del{background:none;border:none;color:#ddd;cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;}
 .sg-del:hover{color:#E24B4A;background:#FCEBEB;}
+
+/* Semanas */
+.wk-th{min-width:24px;max-width:24px;padding:2px 1px!important;text-align:center;vertical-align:bottom!important;cursor:default;}
+.wk-th span{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;color:#aaa;white-space:nowrap;line-height:1;padding:2px 0;}
+.wk-th.cur span{color:#185FA5;font-weight:700;}
+.wk-th.ms{border-left:1.5px solid #ddd!important;}
+.wk-td{min-width:24px;max-width:24px;padding:2px 2px!important;text-align:center;}
+.wk-td.ms{border-left:1.5px solid #eee!important;}
+.wk-bar{width:16px;height:11px;border-radius:3px;display:inline-block;vertical-align:middle;}
+.mn-th{text-align:center;font-size:10px;font-weight:700;letter-spacing:.04em;padding:4px 4px!important;border-left:1.5px solid #ddd!important;}
+.ind-act{font-size:12px;font-weight:700;}
+.ind-met{font-size:10px;color:#aaa;}
 .sg-tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
 .sg-ok-tag{background:#EAF3DE;color:#3B6D11;}
 .sg-warn-tag{background:#FAEEDA;color:#854F0B;}
@@ -176,18 +188,25 @@ select.sg-input{cursor:pointer;background:#fff;}
         <span class="pill" data-ftype="prio" data-fval="1" onclick="filt(this)">P1</span>
         <span class="pill" data-ftype="prio" data-fval="2" onclick="filt(this)">P2</span>
       </div>
-      <table class="dt">
-        <thead><tr>
-          <th style="width:38%;">Iniciativa</th>
-          <th style="width:5%;text-align:center;">P.</th>
-          <th style="width:9%;">Estado</th>
-          <th style="width:14%;">Tipo</th>
-          <th style="width:16%;">Responsable</th>
-          <th style="width:9%;">Inicio</th>
-          <th style="width:9%;">Término</th>
-        </tr></thead>
+      <div style="overflow-x:auto;">
+      <table class="dt" style="min-width:1050px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="min-width:200px;">Iniciativa</th>
+            <th rowspan="2" style="min-width:26px;text-align:center;">P.</th>
+            <th rowspan="2" style="min-width:82px;">Estado</th>
+            <th rowspan="2" style="min-width:78px;">Ind. Actual</th>
+            <th rowspan="2" style="min-width:68px;">Ind. Meta</th>
+            <th rowspan="2" style="min-width:110px;">Responsable</th>
+            <th colspan="4" class="mn-th" style="color:#1D9E75;">Mayo</th>
+            <th colspan="5" class="mn-th" style="color:#185FA5;">Junio</th>
+            <th colspan="4" class="mn-th" style="color:#854F0B;">Julio</th>
+          </tr>
+          <tr id="ini-wk-row"></tr>
+        </thead>
         <tbody id="ini-body"></tbody>
       </table>
+      </div>
     </div>
 
     <!-- Roadmap -->
@@ -346,6 +365,35 @@ function renderOKRs() {
 }
 
 /* ---- INICIATIVAS TAB ---- */
+const META_IND = {
+  'Unidades retenidas en acopio / sin procesar': {actual:'114 uds', meta:'< 30'},
+  'Reservas fantasma liberadas automáticamente': {actual:'0%',      meta:'100%'},
+  '% stock publicado con foto Impel lista':      {actual:'56–65%',  meta:'≥ 80%'},
+  'Unidades sin foto alguna (Tier 4)':           {actual:'338 uds', meta:'< 30'},
+};
+const WEEKS = [
+  {d:'2026-05-04',lbl:'04/05',ms:true},
+  {d:'2026-05-11',lbl:'11/05',cur:true},
+  {d:'2026-05-18',lbl:'18/05'},
+  {d:'2026-05-25',lbl:'25/05'},
+  {d:'2026-06-01',lbl:'01/06',ms:true},
+  {d:'2026-06-08',lbl:'08/06'},
+  {d:'2026-06-15',lbl:'15/06'},
+  {d:'2026-06-22',lbl:'22/06'},
+  {d:'2026-06-29',lbl:'29/06'},
+  {d:'2026-07-06',lbl:'06/07',ms:true},
+  {d:'2026-07-13',lbl:'13/07'},
+  {d:'2026-07-20',lbl:'20/07'},
+  {d:'2026-07-27',lbl:'27/07'},
+];
+const TODAY = new Date('2026-05-11');
+
+function renderWkHeader() {
+  document.getElementById('ini-wk-row').innerHTML = WEEKS.map(w =>
+    `<th class="wk-th${w.ms?' ms':''}${w.cur?' cur':''}"><span>${w.lbl}</span></th>`
+  ).join('');
+}
+
 const F = {etapa:'todas', estado:'todas', prio:'todas'};
 
 function tipoClass(t) {
@@ -373,20 +421,31 @@ function renderIni() {
   rows.forEach(i => {
     const key = i.etapa + '||' + i.meta;
     if(key !== lastKey) {
-      html += `<tr class="etapa-sep"><td colspan="7"><span class="etapa-sep-lbl">${i.etapaNom}</span><span class="etapa-sep-meta">${i.meta}</span></td></tr>`;
+      html += `<tr class="etapa-sep"><td colspan="${6+WEEKS.length}"><span class="etapa-sep-lbl">${i.etapaNom}</span><span class="etapa-sep-meta">${i.meta}</span></td></tr>`;
       lastKey = key;
     }
-    const est = i.estado === 'Ok' ? `<span class="b-ok">Ok</span>` : `<span class="b-ni">No iniciado</span>`;
-    const prio = i.prio === 1 ? `<span class="b-p1">1</span>` : i.prio === 2 ? `<span class="b-p2">2</span>` : `<span style="color:#ddd;">—</span>`;
+    const est   = i.estado === 'Ok' ? `<span class="b-ok">Ok</span>` : `<span class="b-ni">No iniciado</span>`;
+    const prio  = i.prio === 1 ? `<span class="b-p1">1</span>` : i.prio === 2 ? `<span class="b-p2">2</span>` : `<span style="color:#ddd;">—</span>`;
     const trans = i.trans ? `<span class="b-trans">TRANSF.</span> ` : '';
+    const ind   = META_IND[i.meta] || {};
+    const iStart = i.inicio ? new Date(i.inicio) : null;
+    const iEnd   = i.fin    ? new Date(i.fin)    : null;
+    const barCol = i.trans ? '#111' : i.estado === 'Ok' ? '#1D9E75' : '#b0b0b0';
+    const wkCells = WEEKS.map(w => {
+      const wS = new Date(w.d), wE = new Date(w.d); wE.setDate(wE.getDate()+6);
+      const active = iStart && iEnd && wS <= iEnd && wE >= iStart;
+      const past   = wE < TODAY;
+      const dot    = active ? `<div class="wk-bar" style="background:${barCol};opacity:${past||w.cur?1:.3};margin:auto;"></div>` : '';
+      return `<td class="wk-td${w.ms?' ms':''}">${dot}</td>`;
+    }).join('');
     html += `<tr>
       <td>${trans}${i.nombre}</td>
       <td style="text-align:center;">${prio}</td>
       <td>${est}</td>
-      <td><span class="${tipoClass(i.tipo)}">${i.tipo}</span></td>
+      <td><span class="ind-act" style="color:${i.estado==='Ok'?'#3B6D11':'#A32D2D'};">${ind.actual||'—'}</span></td>
+      <td><span class="ind-met">${ind.meta||'—'}</span></td>
       <td style="font-size:11px;color:#666;">${i.resp}</td>
-      <td style="font-size:11px;color:#999;white-space:nowrap;">${fmtDate(i.inicio)}</td>
-      <td style="font-size:11px;color:#999;white-space:nowrap;">${fmtDate(i.fin)}</td>
+      ${wkCells}
     </tr>`;
   });
   document.getElementById('ini-body').innerHTML = html;
@@ -619,6 +678,7 @@ function sgInit() {
 
 /* ---- INIT ---- */
 renderOKRs();
+renderWkHeader();
 renderIni();
 renderRM();
 sgInit();
